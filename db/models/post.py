@@ -1,6 +1,8 @@
 from sqlalchemy.orm import validates
+from sqlalchemy import text
 from ..shared import db
 from db.models.user import User
+from db.models.user_post import UserPost
 
 
 class Post(db.Model):
@@ -35,3 +37,11 @@ class Post(db.Model):
     def get_posts_by_user_id(user_id):
         user = User.query.get(user_id)
         return Post.query.with_parent(user).all()
+
+    @staticmethod
+    def find(post_id):
+        return Post.query.get(post_id)
+        
+    @staticmethod
+    def get_posts_by_multiple_user_ids(user_ids, sortBy, direction):
+        return Post.query.filter(Post.users.any(User.id.in_(user_ids))).order_by(text(f"{Post.__tablename__}.{sortBy} {direction}")).all()
